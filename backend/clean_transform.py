@@ -128,22 +128,28 @@ def main():
                 logw.writerow({"line": i, "reason": r, "pickup_lat": plat, "pickup_lon": plon, "dropoff_lat": dlat, "dropoff_lon": dlon})
                 continue
 
-            dist = parse_float(get_field(row, ["trip_distance", "distance", "trip_distance_km"]))
-            if dist is None or dist < 0:
+            # Some datasets don't provide trip_distance; compute from haversine as fallback
+            reported_dist = parse_float(get_field(row, ["trip_distance", "distance", "trip_distance_km"]))
+            hv_km_pre = haversine_km(plat, plon, dlat, dlon)
+            if reported_dist is not None:
+                dist_km = reported_dist * 1.60934 if args.distance_unit == "miles" else reported_dist
+            else:
+                dist_km = hv_km_pre  # fallback to haversine distance when trip_distance missing
+            if dist_km is None or dist_km < 0:
                 r = "bad_distance"
                 excluded[r] = excluded.get(r, 0) + 1
-                logw.writerow({"line": i, "reason": r, "distance": dist})
+                logw.writerow({"line": i, "reason": r, "distance": dist_km})
                 continue
-            dist_km = dist * 1.60934 if args.distance_unit == "miles" else dist
             if dist_km == 0:
                 r = "zero_distance"
                 excluded[r] = excluded.get(r, 0) + 1
                 logw.writerow({"line": i, "reason": r, "distance": dist_km})
                 continue
 
+            # Fares may be missing in this dataset; allow NULL fares and tips
             fare = parse_float(get_field(row, ["fare_amount", "fare", "total_amount"]))
             tip = parse_float(get_field(row, ["tip_amount", "tip"]))
-            if fare is None or fare < 0 or fare > MAX_FARE:
+            if fare is not None and (fare < 0 or fare > MAX_FARE):
                 r = "bad_fare"
                 excluded[r] = excluded.get(r, 0) + 1
                 logw.writerow({"line": i, "reason": r, "fare": fare})
@@ -169,11 +175,11 @@ def main():
                 logw.writerow({"line": i, "reason": r, "distance": dist_km})
                 continue
 
-            fare_per_km = (fare / dist_km) if dist_km > 0 else None
+            fare_per_km = (fare / dist_km) if (fare is not None and dist_km > 0) else None
             pickup_hour = p_dt.hour
             weekday = p_dt.weekday()
             is_weekend = 1 if weekday >= 5 else 0
-            hv_km = haversine_km(plat, plon, dlat, dlon)
+            hv_km = hv_km_pre
 
             out = {
                 "pickup_datetime": p_dt.strftime("%Y-%m-%d %H:%M:%S"),
