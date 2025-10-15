@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment files
+.env
+.env.*
+
+# Data (raw, processed, logs)
+# Keep data locally but out of Git. Share via cloud or regenerate.
+data/raw/*
+!data/raw/.gitkeep
+
+data/processed/*
+!data/processed/.gitkeep
+
+data/logs/*
+!data/logs/.gitkeep
+
+# JSON artifacts
+*.json
+
+# OS / Editors
+.DS_Store
+.idea/
+.vscode/
