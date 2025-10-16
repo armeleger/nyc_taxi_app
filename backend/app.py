@@ -51,16 +51,16 @@ def create_app():
         where = []
         params = []
         if start:
-            where.append("pickup_datetime >= %s")
+            where.append("pickup_datetime >= ?")
             params.append(start)
         if end:
-            where.append("pickup_datetime <= %s")
+            where.append("pickup_datetime <= ?")
             params.append(end)
         if min_distance is not None:
-            where.append("trip_distance_km >= %s")
+            where.append("trip_distance_km >= ?")
             params.append(min_distance)
         if max_distance is not None:
-            where.append("trip_distance_km <= %s")
+            where.append("trip_distance_km <= ?")
             params.append(max_distance)
         if time_of_day:
             where.append("pickup_hour IS NOT NULL AND pickup_hour BETWEEN 0 AND 23")
@@ -76,7 +76,7 @@ def create_app():
             FROM trips
             {where_sql}
             ORDER BY pickup_datetime DESC
-            LIMIT %s OFFSET %s
+            LIMIT ? OFFSET ?
         """
         params.extend([per_page, offset])
 

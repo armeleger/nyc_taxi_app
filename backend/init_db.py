@@ -1,34 +1,10 @@
 #!/usr/bin/env python3
 import os
 import sys
-import psycopg2
+import sqlite3
 
-HOST = os.getenv('PGHOST', 'localhost')
-PORT = int(os.getenv('PGPORT', '5432'))
-USER = os.getenv('PGUSER', 'postgres')
-PASSWORD = os.getenv('PGPASSWORD')
-DB_NAME = os.getenv('PGDATABASE', 'nyc_taxi')
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
-
-
-def connect(dbname: str):
-    kwargs = dict(host=HOST, port=PORT, dbname=dbname, user=USER)
-    if PASSWORD:
-        kwargs['password'] = PASSWORD
-    return psycopg2.connect(**kwargs)
-
-
-def ensure_database():
-    with connect('postgres') as conn:
-        conn.autocommit = True
-        with conn.cursor() as cur:
-            cur.execute("SELECT 1 FROM pg_database WHERE datname=%s", (DB_NAME,))
-            exists = cur.fetchone() is not None
-            if not exists:
-                cur.execute(f"CREATE DATABASE {DB_NAME}")
-                print(f"Created database {DB_NAME}")
-            else:
-                print(f"Database {DB_NAME} already exists")
+DB_PATH = os.getenv('SQLITE_PATH', os.path.join(os.path.dirname(__file__), 'nyc_taxi.db'))
 
 
 def apply_schema():
@@ -37,16 +13,15 @@ def apply_schema():
         sys.exit(2)
     with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
         sql = f.read()
-    with connect(DB_NAME) as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql)
-        conn.commit()
-    print(f"Applied schema from {SCHEMA_PATH} to {DB_NAME}")
+    # Create directory if needed
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.executescript(sql)
+    print(f"Applied schema from {SCHEMA_PATH} to {DB_PATH}")
 
 
 def main():
     try:
-        ensure_database()
         apply_schema()
         print("DB initialization complete")
     except Exception as e:

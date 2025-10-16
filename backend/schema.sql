@@ -1,26 +1,26 @@
--- PostgreSQL schema for NYC Taxi trips
+-- SQLite schema for NYC Taxi trips
 DROP TABLE IF EXISTS trips;
 CREATE TABLE trips (
-  id SERIAL PRIMARY KEY,
-  pickup_datetime TIMESTAMP NOT NULL,
-  dropoff_datetime TIMESTAMP NOT NULL,
-  pickup_lat DOUBLE PRECISION,
-  pickup_lon DOUBLE PRECISION,
-  dropoff_lat DOUBLE PRECISION,
-  dropoff_lon DOUBLE PRECISION,
-  trip_distance_km DOUBLE PRECISION CHECK (trip_distance_km >= 0),
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  pickup_datetime TEXT NOT NULL,
+  dropoff_datetime TEXT NOT NULL,
+  pickup_lat REAL,
+  pickup_lon REAL,
+  dropoff_lat REAL,
+  dropoff_lon REAL,
+  trip_distance_km REAL CHECK (trip_distance_km >= 0),
   trip_duration_sec INTEGER CHECK (trip_duration_sec > 0),
-  fare_amount NUMERIC(10,2) CHECK (fare_amount >= 0),
-  tip_amount NUMERIC(10,2) CHECK (tip_amount >= 0),
-  passenger_count SMALLINT CHECK (passenger_count >= 0),
-  payment_type VARCHAR(64),
-  avg_speed_kmh DOUBLE PRECISION CHECK (avg_speed_kmh >= 0),
-  fare_per_km NUMERIC(10,3),
-  pickup_hour SMALLINT CHECK (pickup_hour BETWEEN 0 AND 23),
-  weekday SMALLINT CHECK (weekday BETWEEN 0 AND 6),
-  is_weekend BOOLEAN,
-  haversine_km DOUBLE PRECISION,
-  created_at TIMESTAMP DEFAULT now()
+  fare_amount REAL CHECK (fare_amount >= 0),
+  tip_amount REAL CHECK (tip_amount >= 0),
+  passenger_count INTEGER CHECK (passenger_count >= 0),
+  payment_type TEXT,
+  avg_speed_kmh REAL CHECK (avg_speed_kmh >= 0),
+  fare_per_km REAL,
+  pickup_hour INTEGER CHECK (pickup_hour BETWEEN 0 AND 23),
+  weekday INTEGER CHECK (weekday BETWEEN 0 AND 6),
+  is_weekend INTEGER,
+  haversine_km REAL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_trips_pickup_time ON trips (pickup_datetime);

@@ -1,18 +1,8 @@
 import os
-import psycopg2
-from urllib.parse import urlparse
+import sqlite3
 
 
 def get_conn():
-    db_url = os.getenv("DATABASE_URL")
-    if not db_url:
-        raise RuntimeError("Set DATABASE_URL env var, e.g. postgres://user:pass@localhost:5432/dbname")
-    parsed = urlparse(db_url)
-    return psycopg2.connect(
-        dbname=parsed.path[1:],
-        user=parsed.username,
-        password=parsed.password,
-        host=parsed.hostname,
-        port=parsed.port,
-    )
-
+    db_path = os.getenv("SQLITE_PATH", os.path.join(os.path.dirname(__file__), "nyc_taxi.db"))
+    conn = sqlite3.connect(db_path)
+    return conn

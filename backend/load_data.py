@@ -5,8 +5,7 @@ import os
 import sys
 from typing import List
 
-import psycopg2
-from psycopg2.extras import execute_batch
+import sqlite3
 
 EXPECTED_COLUMNS: List[str] = [
     "pickup_datetime",
@@ -31,13 +30,9 @@ EXPECTED_COLUMNS: List[str] = [
 
 
 def parse_args():
-    p = argparse.ArgumentParser(description="Load cleaned NYC taxi CSV into Postgres trips table")
+    p = argparse.ArgumentParser(description="Load cleaned NYC taxi CSV into SQLite trips table")
     p.add_argument("--csv", default=os.path.join("data", "cleaned_data.csv"), help="Path to cleaned CSV (default: data/cleaned_data.csv)")
-    p.add_argument("--host", default=os.getenv("PGHOST", "localhost"))
-    p.add_argument("--port", type=int, default=int(os.getenv("PGPORT", "5432")))
-    p.add_argument("--dbname", default=os.getenv("PGDATABASE", "nyc_taxi"))
-    p.add_argument("--user", default=os.getenv("PGUSER", "postgres"))
-    p.add_argument("--password", default=os.getenv("PGPASSWORD"), help="Postgres password (or set PGPASSWORD env)")
+    p.add_argument("--db", default=os.getenv("SQLITE_PATH", os.path.join(os.path.dirname(__file__), "nyc_taxi.db")), help="Path to SQLite DB file (default: backend/nyc_taxi.db)")
     p.add_argument("--table", default="trips", help="Target table (default: trips)")
     p.add_argument("--truncate", action="store_true", help="Truncate table before load")
     p.add_argument("--skip-header-check", action="store_true", help="Skip CSV header validation")
@@ -78,35 +73,31 @@ def main():
         validate_header(found, EXPECTED_COLUMNS)
         print("Header validation: OK")
 
-    dsn_parts = [
-        f"host={args.host}",
-        f"port={args.port}",
-        f"dbname={args.dbname}",
-        f"user={args.user}",
-    ]
-    if args.password:
-        dsn_parts.append(f"password={args.password}")
-    dsn = " ".join(dsn_parts)
-
-    copy_sql = (
-        f"COPY {args.table} (" + ",".join(EXPECTED_COLUMNS) + ") "
-        "FROM STDIN WITH (FORMAT csv, HEADER true)"
+    insert_sql = (
+        f"INSERT INTO {args.table} (" + ",".join(EXPECTED_COLUMNS) + ") "
+        "VALUES (" + ",".join(["?"] * len(EXPECTED_COLUMNS)) + ")"
     )
 
     try:
-        with psycopg2.connect(dsn) as conn:
-            conn.autocommit = True
-            with conn.cursor() as cur:
-                if args.truncate:
-                    print(f"Truncating table {args.table} ...")
-                    cur.execute(f"TRUNCATE TABLE {args.table};")
-                print(f"Loading {args.csv} into {args.table} ...")
-                with open(args.csv, "r", encoding="utf-8") as f:
-                    cur.copy_expert(copy_sql, f)
-                # Quick count
-                cur.execute(f"SELECT COUNT(*) FROM {args.table};")
-                total = cur.fetchone()[0]
-                print(f"Load complete. Row count: {total}")
+        with sqlite3.connect(args.db) as conn:
+            cur = conn.cursor()
+            if args.truncate:
+                print(f"Truncating table {args.table} ...")
+                cur.execute(f"DELETE FROM {args.table};")
+                conn.commit()
+
+            print(f"Loading {args.csv} into {args.table} ...")
+            with open(args.csv, "r", encoding="utf-8", newline="") as f:
+                reader = csv.DictReader(f)
+                rows = []
+                for row in reader:
+                    rows.append(tuple(row[col] for col in EXPECTED_COLUMNS))
+                cur.executemany(insert_sql, rows)
+            conn.commit()
+
+            cur.execute(f"SELECT COUNT(*) FROM {args.table};")
+            total = cur.fetchone()[0]
+            print(f"Load complete. Row count: {total}")
     except Exception as e:
         print("ERROR during load:", e, file=sys.stderr)
         sys.exit(2)
