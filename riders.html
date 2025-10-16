@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>  
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RideLane - TripFlow</title>
+
+  <!-- Link to your local CSS -->
+  <link rel="stylesheet" href="riders.css" />
+
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+
+  <div class="riderflow-wrapper"> 
+    <header class="riderflow-header">
+      <h1>RiderFlow: Dashboard for Trip Insights</h1> 
+
+      <div class="trip-filters"> 
+        <input type="date" id="filter-start-date" />
+        <input type="date" id="filter-end-date" />
+        <input type="number" id="filter-min-km" placeholder="Min Distance (km)" />
+        <input type="number" id="filter-max-km" placeholder="Max Distance (km)" />
+        <input type="number" id="filter-record-limit" placeholder="Number of trips" />
+        <button onclick="applyFilters()">Filter Journeys</button> 
+      </div>
+    </header>
+
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <!-- Sections to display top fares and routes -->
+    <section class="top-fares">
+      <h2>Top Fares</h2>
+      <ul id="top-fares-list"></ul>
+    </section>
+
+    <section class="top-routes">
+      <h2>Top Routes</h2>
+      <ul id="top-routes-list"></ul>
+    </section>
+
+    <!-- Summary Section -->
+    <section class="trip-summary">
+      <h2>Trip Summary</h2>
+      <p>Total Trips: <span id="total-trips">0</span></p>
+      <p>Average Distance: <span id="avg-distance">0 km</span></p>
+      <p>Average Fare: <span id="avg-fare">$0.01</span></p>
+    </section>
+  </div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <!-- Your local JS -->
+  <script src="riders.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,68 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
+
+.riderflow-header {
+  background-color: #222;
+  color: white;
+  padding: 20px;
+}
+
+.trip-filters {
+  margin-top: 10px;
+}
+
+.trip-filters input {
+  margin: 5px;
+  padding: 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.trip-filters button {
+  padding: 6px 12px;
+  background-color: #f8c200;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.trip-filters button:hover {
+  background-color: #ffc300;
+}
+
+#map {
+  height: 400px;
+  width: 90%;
+  max-width: 1000px;
+  margin: 20px auto;
+  border-radius: 8px;
+}
+
+.top-fares, .top-routes, .trip-summary {
+  background: white;
+  margin: 20px auto;
+  padding: 15px;
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+ul li {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+ul li:last-child {
+  border-bottom: none;
+}
+
