@@ -1,8 +1,12 @@
 let map;
 let markers = [];
 
+const API_BASE = 'http://localhost:5000';
+
 window.onload = () => {
   initMap();
+  // Initial load
+  applyFilters();
 };
 
 function initMap() {
@@ -14,39 +18,41 @@ function initMap() {
   ).addTo(map);
 }
 
-function applyFilters() {
+async function applyFilters() {
   const start = document.getElementById('filter-start-date').value;
   const end = document.getElementById('filter-end-date').value;
   const minDist = document.getElementById('filter-min-km').value;
   const maxDist = document.getElementById('filter-max-km').value;
-  const limit = document.getElementById('filter-record-limit').value;
+  const limit = document.getElementById('filter-record-limit').value || 100;
 
-  // For demo purposes, let's use dummy data instead of a real API
-  const dummyTrips = [
-    { trip_id: 1, pickup_lat: 40.713, pickup_lon: -74.005, fare_amount: 15.2 },
-    { trip_id: 2, pickup_lat: 40.716, pickup_lon: -74.002, fare_amount: 22.5 },
-  ];
+  try {
+    // Summary
+    const sRes = await fetch(`${API_BASE}/api/summary`);
+    const sData = await sRes.json();
+    updateSummary({
+      totalTrips: sData.total_trips ?? 0,
+      avgDistance: sData.avg_distance ?? '',
+      avgFare: sData.avg_fare_per_km ?? ''
+    });
 
-  const dummyTopRoutes = [
-    { route: "Downtown → Uptown", count: 120 },
-    { route: "Midtown → Brooklyn", count: 95 },
-  ];
+    // Trips
+    const params = new URLSearchParams();
+    if (start) params.set('start', start);
+    if (end) params.set('end', end);
+    if (minDist) params.set('min_distance', minDist);
+    if (maxDist) params.set('max_distance', maxDist);
+    params.set('per_page', limit);
 
-  const dummyTopFares = [
-    { trip_id: 999, fare_amount: 75.0 },
-    { trip_id: 500, fare_amount: 60.0 },
-  ];
+    const tRes = await fetch(`${API_BASE}/api/trips?${params.toString()}`);
+    const tData = await tRes.json();
+    updateMap(tData.results || []);
 
-  const dummySummary = {
-    totalTrips: 2,
-    avgDistance: 5.5,
-    avgFare: 18.85
-  };
-
-  updateMap(dummyTrips);
-  updateTopRoutes(dummyTopRoutes);
-  updateTopFares(dummyTopFares);
-  updateSummary(dummySummary);
+    // Placeholder lists until real endpoints exist
+    updateTopRoutes([]);
+    updateTopFares([]);
+  } catch (e) {
+    console.error('Failed to load data', e);
+  }
 }
 
 function updateSummary(summary) {
@@ -60,9 +66,10 @@ function updateMap(trips) {
   markers = [];
 
   trips.forEach(trip => {
+    if (trip.pickup_lat == null || trip.pickup_lon == null) return;
     const marker = L.marker([trip.pickup_lat, trip.pickup_lon]).addTo(map);
     marker.bindPopup(
-      `Trip ID: ${trip.trip_id}<br>Fare: $${trip.fare_amount}`
+      `Trip ID: ${trip.id ?? trip.trip_id}<br>Fare: $${trip.fare_amount ?? ''}`
     );
     markers.push(marker);
   });

@@ -2,17 +2,23 @@
 import os
 from flask import Flask, jsonify, request
 from database import get_conn
+from flask_cors import CORS
 
 
 def create_app():
+    """Create and configure the Flask app."""
     app = Flask(__name__)
+    # Allow browser-based frontends (served from file:// or other ports) to call this API.
+    CORS(app)
 
     @app.get("/health")
     def health():
+        """Simple health probe."""
         return jsonify({"status": "ok"}), 200
 
     @app.get("/api/summary")
     def summary():
+        """High-level dataset summary values."""
         try:
             conn = get_conn()
             cur = conn.cursor()
@@ -38,11 +44,12 @@ def create_app():
 
     @app.get("/api/trips")
     def trips():
+        """Paginated list of trips with simple filters."""
         start = request.args.get("start")
         end = request.args.get("end")
         min_distance = request.args.get("min_distance", type=float)
         max_distance = request.args.get("max_distance", type=float)
-        time_of_day = request.args.get("time_of_day")  # optional, if you add it later
+        time_of_day = request.args.get("time_of_day")
         page = request.args.get("page", default=1, type=int)
         per_page = request.args.get("per_page", default=100, type=int)
         per_page = max(1, min(per_page, 500))
@@ -64,7 +71,6 @@ def create_app():
             params.append(max_distance)
         if time_of_day:
             where.append("pickup_hour IS NOT NULL AND pickup_hour BETWEEN 0 AND 23")
-            # retained as guard; if you later store time_of_day category, add equality filter here
 
         where_sql = (" WHERE " + " AND ".join(where)) if where else ""
         sql = f"""

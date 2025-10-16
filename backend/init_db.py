@@ -3,6 +3,8 @@ import os
 import sys
 import sqlite3
 
+"""Initialize the SQLite database using `schema.sql`."""
+
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), 'schema.sql')
 DB_PATH = os.getenv('SQLITE_PATH', os.path.join(os.path.dirname(__file__), 'nyc_taxi.db'))
 
@@ -13,7 +15,6 @@ def apply_schema():
         sys.exit(2)
     with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
         sql = f.read()
-    # Create directory if needed
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     with sqlite3.connect(DB_PATH) as conn:
         conn.executescript(sql)

@@ -90,8 +90,30 @@ def main():
             with open(args.csv, "r", encoding="utf-8", newline="") as f:
                 reader = csv.DictReader(f)
                 rows = []
+                num_cols_float = {"pickup_lat","pickup_lon","dropoff_lat","dropoff_lon","trip_distance_km","fare_amount","tip_amount","avg_speed_kmh","fare_per_km","haversine_km"}
+                num_cols_int = {"trip_duration_sec","passenger_count","pickup_hour","weekday","is_weekend"}
                 for row in reader:
-                    rows.append(tuple(row[col] for col in EXPECTED_COLUMNS))
+                    cleaned = []
+                    for col in EXPECTED_COLUMNS:
+                        val = row.get(col, "")
+                        if isinstance(val, str):
+                            val = val.strip()
+                        if val == "":
+                            cleaned.append(None)
+                            continue
+                        if col in num_cols_float:
+                            try:
+                                cleaned.append(float(val))
+                            except ValueError:
+                                cleaned.append(None)
+                        elif col in num_cols_int:
+                            try:
+                                cleaned.append(int(float(val)))
+                            except ValueError:
+                                cleaned.append(None)
+                        else:
+                            cleaned.append(val)
+                    rows.append(tuple(cleaned))
                 cur.executemany(insert_sql, rows)
             conn.commit()
 
