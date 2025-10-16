@@ -7,6 +7,9 @@ by
 3. Sheja Dorian
 4. Kenny Crepin Rukoro
 
+## Tutorial
+<video controls src="docs/Recording.mov" title="Title"></video>
+
 ## Features
 - **Backend**: Flask API with CORS over SQLite.
 - **Data prep**: `backend/clean_data.py` transforms raw CSV → cleaned CSV.
