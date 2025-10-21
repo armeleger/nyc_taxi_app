@@ -7,8 +7,8 @@ by
 3. Sheja Dorian
 4. Kenny Crepin Rukoro
 
-## Tutorial
-<video controls src="docs/Recording.mov" title="Title"></video>
+## Video Tutorial link
+https://youtu.be/MLU-VCMKw4c?si=V8CjJTWd1qh9edw4
 
 ## Features
 - **Backend**: Flask API with CORS over SQLite.
