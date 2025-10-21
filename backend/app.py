@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import utils.session
 import os
 from flask import Flask, jsonify, request
 from database import get_conn

@@ -5,8 +5,6 @@ __pycache__/
 venv/
 
 
-.env
-.env.*
 
 # Data (raw, processed, logs)
 # Keep data locally but out of Git. Share via cloud or regenerate.
@@ -25,4 +23,5 @@ data/logs/*
 # OS / Editors
 .DS_Store
 .idea/
-.vscode/
+config.bat
+node_modules
